@@ -7,6 +7,7 @@ from torchvision import transforms
 from cyclegan_turbo import CycleGAN_Turbo
 from my_utils.training_utils import build_transform
 import numpy as np
+from pathlib import Path
 
 
 if __name__ == "__main__":
@@ -70,7 +71,7 @@ if __name__ == "__main__":
 
         fourcc = cv2.VideoWriter.fourcc(*'XVID')
         os.makedirs(args.output_dir, exist_ok=True)
-        bname = os.path.basename(args.input_video)
+        bname = Path(args.input_video).stem + '.avi'
         video_writer = cv2.VideoWriter(os.path.join(args.output_dir, bname),
                               fourcc, fps, (width, height))
 
