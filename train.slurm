@@ -11,7 +11,5 @@
 #SBATCH --mail-type=ALL
 #SBATCH --job-name="uhaze_img2img"
 
-module load Python/3.10.8-GCCcore-12.2.0
-module load CUDA/12.8.0
-. /home/bwp18/img2img-turbo/venv/bin/activate
+. /home/bwp18/img2img-turbo/prep_env.sh
 . /home/bwp18/img2img-turbo/train.sh
