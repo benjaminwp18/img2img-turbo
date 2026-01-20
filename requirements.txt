@@ -4,7 +4,7 @@ numpy
 open-clip-torch
 opencv-python
 pillow
-cv2
+opencv-python
 scipy
 timm
 tokenizers

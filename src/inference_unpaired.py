@@ -79,9 +79,12 @@ if __name__ == "__main__":
             success = True
 
             while success:
-                success, frame = video_cap.read()
+                success, frame_cv = video_cap.read()
                 if success:
                     print(f'Processing frame {current_frame}/{total_frames}')
+
+                    frame_cv = cv2.cvtColor(frame_cv, cv2.COLOR_BGR2RGB)
+                    frame = Image.fromarray(frame_cv)
 
                     input_img = T_val(frame)
                     x_t = transforms.ToTensor()(input_img)
