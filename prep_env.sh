@@ -3,3 +3,6 @@
 module load Python/3.10.8-GCCcore-12.2.0
 module load CUDA/12.8.0
 . /home/bwp18/img2img-turbo/venv/bin/activate
+export PMI_SIZE=1
+export NCCL_P2P_DISABLE=1
+

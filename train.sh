@@ -1,5 +1,3 @@
-export PMI_SIZE=1
-export NCCL_P2P_DISABLE=1
 accelerate launch --main_process_port 29501 src/train_cyclegan_turbo.py \
     --pretrained_model_name_or_path="stabilityai/sd-turbo" \
     --output_dir="output/cyclegan_turbo/uhaze" \
