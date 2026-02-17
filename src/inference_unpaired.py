@@ -9,11 +9,30 @@ from my_utils.training_utils import build_transform
 import numpy as np
 from pathlib import Path
 
+def process_image(input_image_path: Path, T_val, model: CycleGAN_Turbo, args) -> None:
+    input_image = Image.open(input_image_path).convert('RGB')
+    # translate the image
+    with torch.no_grad():
+        input_img = T_val(input_image)
+        x_t = transforms.ToTensor()(input_img)
+        x_t = transforms.Normalize([0.5], [0.5])(x_t).unsqueeze(0).cuda()
+        if args.use_fp16:
+            x_t = x_t.half()
+        output = model(x_t, direction=args.direction, caption=args.prompt)
+
+    output_pil = transforms.ToPILImage()(output[0].cpu() * 0.5 + 0.5)
+    output_pil = output_pil.resize((input_image.width, input_image.height), Image.LANCZOS)
+
+    # save the output image
+    bname = os.path.basename(input_image_path)
+    os.makedirs(args.output_dir, exist_ok=True)
+    output_pil.save(os.path.join(args.output_dir, bname))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--input_image', type=str, help='path to the input image')
+    group.add_argument('--input_dir', type=str, help='path to the input directory of images or videos')
     group.add_argument('--input_video', type=str, help='path to the input video')
     parser.add_argument('--prompt', type=str, required=False, help='the prompt to be used. It is required when loading a custom model_path.')
     parser.add_argument('--model_name', type=str, default=None, help='name of the pretrained model to be used')
@@ -45,23 +64,13 @@ if __name__ == "__main__":
     T_val = build_transform(args.image_prep)
 
     if args.input_image is not None:
-        input_image = Image.open(args.input_image).convert('RGB')
-        # translate the image
-        with torch.no_grad():
-            input_img = T_val(input_image)
-            x_t = transforms.ToTensor()(input_img)
-            x_t = transforms.Normalize([0.5], [0.5])(x_t).unsqueeze(0).cuda()
-            if args.use_fp16:
-                x_t = x_t.half()
-            output = model(x_t, direction=args.direction, caption=args.prompt)
-
-        output_pil = transforms.ToPILImage()(output[0].cpu() * 0.5 + 0.5)
-        output_pil = output_pil.resize((input_image.width, input_image.height), Image.LANCZOS)
-
-        # save the output image
-        bname = os.path.basename(args.input_image)
-        os.makedirs(args.output_dir, exist_ok=True)
-        output_pil.save(os.path.join(args.output_dir, bname))
+        process_image(args.input_image, T_val, model, args)
+    if args.input_dir is not None:
+        image_paths = list(Path(args.input_dir).iterdir())
+        image_paths.sort()
+        for i, image_path in enumerate(image_paths):
+            print(f'Processing image {image_path} ({i}/{len(image_paths)})')
+            process_image(image_path, T_val, model, args)
     else:
         video_cap = cv2.VideoCapture(args.input_video)
         fps = video_cap.get(cv2.CAP_PROP_FPS)
